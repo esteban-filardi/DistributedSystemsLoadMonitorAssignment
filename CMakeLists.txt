@@ -6,6 +6,7 @@ project(DistributedSystemsLoadMonitorAssignment)
 
 set(SOURCES
     src/main.cpp
+    src/Application/Application.cpp
     src/LoadInfoReporter/LoadInfoReporter.cpp
     src/GuidGenerator/GuidGenerator.cpp
     # Add more source files here if needed
