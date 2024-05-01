@@ -12,6 +12,9 @@
 #include <unistd.h>
 #include <csignal>
 #include <thread>
+#include <functional>
 #include "../include/sp.h"
+#include "LoadInfoReporter/LoadInfoReporter.h"
+#include "GuidGenerator/GuidGenerator.h"
 
 // TODO: Reference additional headers your program requires here.

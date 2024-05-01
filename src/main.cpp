@@ -2,13 +2,10 @@
 //
 
 #include "main.h"
-#include "LoadInfoReporter/LoadInfoReporter.h"
-#include "GuidGenerator/GuidGenerator.h"
 
 using namespace std;
 
 const string CLUSTER_GROUP_NAME = "assignment";
-
 
 // Returned group name which can be used to send unicast messages to this connection (It is required)
 char PrivateGroup[MAX_GROUP_NAME];
@@ -20,6 +17,8 @@ void ProcessParameters(int argc, char* argv[]);
 void StopSignalHandler(int s);
 
 void SetUpStopSignalHandler();
+
+void SendLoadInfoTask(mailbox mailboxParam, string user, string clusterGroupName);
 
 int main(int argc, char* argv[])
 {
@@ -41,7 +40,17 @@ int main(int argc, char* argv[])
 	cout << "Joining group: " << CLUSTER_GROUP_NAME << endl;
 	SP_join(Mbox, CLUSTER_GROUP_NAME.c_str());
 
-	LoadInfoReporter loadInfoReporter(Mbox, user, CLUSTER_GROUP_NAME);
+
+	auto sendLoadInfoBoundTask = std::bind(SendLoadInfoTask, Mbox, user, CLUSTER_GROUP_NAME);
+	std::thread sendLoadInfoThread(sendLoadInfoBoundTask);
+	sendLoadInfoThread.join();
+	
+	return 0;
+}
+
+void SendLoadInfoTask(mailbox mailboxParam, string user, string clusterGroupName)
+{
+	LoadInfoReporter loadInfoReporter(mailboxParam, user, clusterGroupName);
 
 	while (true)
 	{
@@ -50,8 +59,6 @@ int main(int argc, char* argv[])
 		std::chrono::seconds durationToWait(1);
 		std::this_thread::sleep_for(durationToWait);
 	}
-	
-	return 0;		
 }
 
 void ProcessParameters(int argc, char* argv[])
