@@ -5,6 +5,7 @@
 #include <chrono>
 #include <iomanip>
 #include "../get-percentage-cpu.h"
+#include "../../include/json.hpp"
 
 using namespace std;
 
@@ -31,17 +32,14 @@ std::string LoadInfoReporter::GetLoadInfoMessage()
     auto loadAsInt = getPercentageCpu();
     auto loadAsString = std::to_string(loadAsInt);
 
-    auto currentTimestampt = CurrentISO8601TimeUTC();
+    auto currentTimestamp = CurrentISO8601TimeUTC();
 
-    // Build JSON message
-    std::ostringstream jsonStringStream;
-    jsonStringStream << "{\n";
-    jsonStringStream << "\t\"node_name\": \"" << this->_username << "\",\n";
-    jsonStringStream << "\t\"time\": \"" << currentTimestampt << "\",\n";
-    jsonStringStream << "\t\"load\": " << loadAsInt << "\n";
-    jsonStringStream << "}";
+    nlohmann::json jsonMessage;
+    jsonMessage["node_name"] = this->_username;
+    jsonMessage["time"] = currentTimestamp;
+    jsonMessage["load"] = loadAsInt;
 
-    return jsonStringStream.str();
+    return jsonMessage.dump();
 }
 
 std::string CurrentISO8601TimeUTC() {
