@@ -5,8 +5,6 @@
 #include <cstring>
 #include <iostream>
 #include <chrono>
-#include <unistd.h>
-#include <csignal>
 #include <thread>
 #include <functional>
 #include "../LoadInfoReporter/LoadInfoReporter.h"
@@ -26,7 +24,6 @@ Application::Application() {
 }
 
 int Application::Run(int argc, char* argv[]) {
-	SetUpStopSignalHandler();
 	ProcessParameters(argc, argv);
 
 	std::string user = GuidGenerator::GenerateGuid();
@@ -99,19 +96,4 @@ void ReceiveClusterMessagesTask(mailbox mailboxParam, std::string user, std::str
 
 Application::~Application() {
     SP_disconnect(Application::_mailbox);
-}
-
-void StopSignalHandler(int s)
-{
-	printf("\nCaught signal %d\n", s);
-	exit(1);
-}
-
-void Application::SetUpStopSignalHandler()
-{
-	struct sigaction sigIntHandler;
-	sigIntHandler.sa_handler = StopSignalHandler;
-	sigemptyset(&sigIntHandler.sa_mask);
-	sigIntHandler.sa_flags = 0;
-	sigaction(SIGINT, &sigIntHandler, NULL);
 }

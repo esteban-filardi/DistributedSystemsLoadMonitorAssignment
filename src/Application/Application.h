@@ -20,7 +20,4 @@ private:
     static char _spreadName[80];
 
     void ProcessParameters(int argc, char* argv[]);
-    void SetUpStopSignalHandler();    
 };
-
-void StopSignalHandler(int s);
