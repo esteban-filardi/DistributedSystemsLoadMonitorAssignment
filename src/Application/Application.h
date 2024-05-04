@@ -2,10 +2,12 @@
 
 #include <string>
 #include "../../include/sp.h"
+#include "../Cluster/Cluster.h"
 
 class Application {
 public:
     static mailbox _mailbox;
+    static Cluster cluster;
 
     Application();
     ~Application();
@@ -13,7 +15,7 @@ public:
     int Run(int argc, char* argv[]);
 private:
     const std::string CLUSTER_GROUP_NAME = "assignment";
-    /** Returned group name which can be used to send unicast messages to this connection (It is required for SP_Conect) */
+    /** Returned group name which can be used to send unicast messages to this connection (It is required for SP_Connect) */
     static char _privateGroup[MAX_GROUP_NAME];
     static char _spreadName[80];
 
@@ -22,4 +24,3 @@ private:
 };
 
 void StopSignalHandler(int s);
-void SendLoadInfoTask(mailbox mailboxParam, std::string user, std::string clusterGroupName);

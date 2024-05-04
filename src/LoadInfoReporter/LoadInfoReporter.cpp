@@ -5,11 +5,10 @@
 #include <chrono>
 #include <iomanip>
 #include "../get-percentage-cpu.h"
+#include "../AppMessageTypes/AppMessageTypes.h"
 #include "../../include/json.hpp"
 
 using namespace std;
-
-const short MT_LOAD_INFO_MESS_TYPE  = 666;
 
 std::string CurrentISO8601TimeUTC();
 
@@ -28,7 +27,7 @@ void LoadInfoReporter::SendLoadInfo() {
 }
 
 std::string LoadInfoReporter::GetLoadInfoMessage()
-{    
+{
     auto loadAsInt = getPercentageCpu();
     auto loadAsString = std::to_string(loadAsInt);
 

@@ -11,10 +11,15 @@
 #include <functional>
 #include "../LoadInfoReporter/LoadInfoReporter.h"
 #include "../GuidGenerator/GuidGenerator.h"
+#include "../ClusterMessagesReceiver/ClusterMessagesReceiver.h"
 
+Cluster Application::cluster = Cluster();
 char Application::_privateGroup[MAX_GROUP_NAME];
 char Application::_spreadName[80];
 mailbox Application::_mailbox;
+
+void SendLoadInfoTask(mailbox mailboxParam, std::string user, std::string clusterGroupName);
+void ReceiveClusterMessagesTask(mailbox mailboxParam, std::string user, std::string clusterGroupName);
 
 Application::Application() {
     
@@ -42,8 +47,14 @@ int Application::Run(int argc, char* argv[]) {
 
 	auto sendLoadInfoBoundTask = std::bind(SendLoadInfoTask, _mailbox, user, CLUSTER_GROUP_NAME);
 	std::thread sendLoadInfoThread(sendLoadInfoBoundTask);
+
+	auto receiveClusterMessagesBoundTask = std::bind(ReceiveClusterMessagesTask, _mailbox, user, CLUSTER_GROUP_NAME);
+	std::thread receiveClusterMessagesThread(receiveClusterMessagesBoundTask);
+
 	sendLoadInfoThread.join();
-	
+    receiveClusterMessagesThread.join();
+
+
 	return 0;
 }
 
@@ -78,6 +89,12 @@ void Application::ProcessParameters(int argc, char* argv[])
 			exit(1);
 		}
 	}
+}
+
+void ReceiveClusterMessagesTask(mailbox mailboxParam, std::string user, std::string clusterGroupName)
+{
+    ClusterMessagesReceiver clusterMessageReceiver (mailboxParam, user, clusterGroupName);
+    clusterMessageReceiver.ReceiveClusterMessages();
 }
 
 Application::~Application() {
