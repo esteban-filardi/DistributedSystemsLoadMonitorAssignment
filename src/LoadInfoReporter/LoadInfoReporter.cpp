@@ -20,7 +20,7 @@ LoadInfoReporter::LoadInfoReporter(mailbox mailboxParam, std::string username, s
 }
 
 void LoadInfoReporter::SendLoadInfo() {
-    cout << "SendLoadInfo" << endl;
+    // cout << "Sending load info" << endl;
 
     auto loadMesage = GetLoadInfoMessage();
     SP_multicast(_mailbox, AGREED_MESS, this->_groupName.c_str(), MT_LOAD_INFO_MESS_TYPE, loadMesage.length(), loadMesage.c_str());

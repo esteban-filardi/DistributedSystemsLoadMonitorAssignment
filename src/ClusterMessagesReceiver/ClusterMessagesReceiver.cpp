@@ -12,7 +12,7 @@
 
 using namespace std;
 
-void DisplayMessageInformation(char * message, int messageServiceType, int ret, char * sender, int16 applicationSpecificMessageType, int isThereEndianMisMatch, int numberOfGroupMessageWasSentTo, char(*groupsMessageWasSentTo)[32]);
+void DisplayMessageInformation(char * message, int messageServiceType, int ret, char * sender, int16 applicationSpecificMessageType, int isThereEndianMisMatch, int numberOfGroupMessageWasSentTo, char(*groupsMessageWasSentTo)[DSLM_MAX_NUMBER_OF_GROUPS]);
 
 // Constructor definition
 ClusterMessagesReceiver::ClusterMessagesReceiver(mailbox mailboxParam, std::string username, std::string groupName) {
@@ -22,7 +22,7 @@ ClusterMessagesReceiver::ClusterMessagesReceiver(mailbox mailboxParam, std::stri
 }
 
 void ClusterMessagesReceiver::ReceiveClusterMessages() {
-    cout << "ReceiveClusterMessages" << endl;
+    // cout << std::endl <<  "ReceiveClusterMessages" << endl;
 
     while (true)
     {
@@ -50,6 +50,8 @@ void ClusterMessagesReceiver::ReceiveMessage()
     }
 
     DisplayMessageInformation(message, messageServiceType, ret, sender, applicationSpecificMessageType, isThereEndianMisMatch, numberOfGroupMessageWasSentTo, groupsMessageWasSentTo);
+
+    Application::PrintUserInputPrompt();
 
     if (Is_regular_mess(messageServiceType))
     {
@@ -107,6 +109,7 @@ void ClusterMessagesReceiver::ReceiveMessage()
 /// <param name="groupsMessageWasSentTo"></param>
 void DisplayMessageInformation(char* message, int messageServiceType, int ret, char* sender, int16 applicationSpecificMessageType, int isThereEndianMisMatch, int numberOfGroupMessageWasSentTo, char (*groupsMessageWasSentTo) [DSLM_MAX_NUMBER_OF_GROUPS])
 {
+    printf("\n");
     if (Is_regular_mess(messageServiceType))
     {
         /* A regular message, sent by one of the processes */

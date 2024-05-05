@@ -7,6 +7,8 @@
 #include <chrono>
 #include <thread>
 #include <functional>
+#include <sstream>
+#include <iomanip>
 #include "../LoadInfoReporter/LoadInfoReporter.h"
 #include "../GuidGenerator/GuidGenerator.h"
 #include "../ClusterMessagesReceiver/ClusterMessagesReceiver.h"
@@ -41,6 +43,8 @@ int Application::Run(int argc, char* argv[]) {
 	std::cout << "Joining group: " << Application::CLUSTER_GROUP_NAME << std::endl;
 	SP_join(_mailbox, CLUSTER_GROUP_NAME.c_str());
 
+	PrintMenu();
+	PrintUserInputPrompt();
 
 	auto sendLoadInfoBoundTask = std::bind(SendLoadInfoTask, _mailbox, user, CLUSTER_GROUP_NAME);
 	std::thread sendLoadInfoThread(sendLoadInfoBoundTask);
@@ -48,8 +52,9 @@ int Application::Run(int argc, char* argv[]) {
 	auto receiveClusterMessagesBoundTask = std::bind(ReceiveClusterMessagesTask, _mailbox, user, CLUSTER_GROUP_NAME);
 	std::thread receiveClusterMessagesThread(receiveClusterMessagesBoundTask);
 
-	sendLoadInfoThread.join();
-    receiveClusterMessagesThread.join();
+	while (true) {
+		Application::UserCommand();;
+	}
 
 
 	return 0;
@@ -92,6 +97,66 @@ void ReceiveClusterMessagesTask(mailbox mailboxParam, std::string user, std::str
 {
     ClusterMessagesReceiver clusterMessageReceiver (mailboxParam, user, clusterGroupName);
     clusterMessageReceiver.ReceiveClusterMessages();
+}
+
+void Application::PrintMenu()
+{
+	std::ostringstream builder;
+	builder << std::endl;
+	builder << "==========" << std::endl;
+	builder << "User Menu:" << std::endl;
+	builder << "----------" << std::endl;
+	builder << std::endl;
+	builder << "\tl -- print node list" << std::endl;
+	builder << "\tq -- quit" << std::endl;
+	builder << std::endl;
+
+	std::cout << builder.str();
+}
+
+void Application::PrintUserInputPrompt()
+{
+	std::cout << "User > " << std::flush;
+}
+
+void Application::PrintNodeList()
+{
+	std::ostringstream builder;
+
+	builder << std::left << std::setw(30) << "Name" << std::setw(30) << "Load" << std::endl;
+	builder << std::setfill('-') << std::setw(60) << "" << std::setfill(' ') << std::endl;
+
+	auto nodesMap = Application::cluster.GetClusterNodesSnapshot();
+
+	for (auto it = nodesMap.begin(); it != nodesMap.end(); ++it)
+	{
+		std::string loadInfoString = it->second.load.has_value() ? std::to_string(it->second.load.value()) : "";
+
+		builder << std::setw(30) << it->first << std::setw(30) << loadInfoString << std::endl;
+	}
+
+	std::cout << builder.str() << std::endl;
+}
+
+void Application::UserCommand()
+{
+	std::string command;
+
+	std::cin >> command;
+
+	switch (command.c_str()[0])
+	{
+	case 'l':
+		Application::PrintNodeList();
+		break;
+	case 'q':
+		exit(0);
+		break;
+	default:
+		Application::PrintMenu();
+	}
+
+	Application::PrintUserInputPrompt();
 }
 
 Application::~Application() {

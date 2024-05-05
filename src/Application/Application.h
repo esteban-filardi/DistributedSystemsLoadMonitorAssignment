@@ -13,6 +13,10 @@ public:
     ~Application();
 
     int Run(int argc, char* argv[]);
+    static void PrintMenu();
+    static void PrintUserInputPrompt();
+    static void PrintNodeList();
+    static void UserCommand();
 private:
     const std::string CLUSTER_GROUP_NAME = "assignment";
     /** Returned group name which can be used to send unicast messages to this connection (It is required for SP_Connect) */
