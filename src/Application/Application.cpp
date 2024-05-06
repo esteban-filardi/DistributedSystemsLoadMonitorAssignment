@@ -28,10 +28,12 @@ Application::Application() {
 int Application::Run(int argc, char* argv[]) {
 	ProcessParameters(argc, argv);
 
+	// Generate a random username
 	std::string user = GuidGenerator::GenerateGuid();
 
 	/* connecting to the daemon, requesting group information */
 	std::cout << "Connecting with username: " << user << std::endl;
+
 	int ret = SP_connect(_spreadName, user.c_str(), 0, 1, &_mailbox, _privateGroup);
 	if (ret < 0)
 	{

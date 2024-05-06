@@ -15,8 +15,9 @@ public:
     /// Gets a snapshot of the internal node map to ensure thread safety when presenting the nodes.
     /// </summary>
     /// <returns></returns>
-    std::map<std::string, ClusterNode> GetClusterNodesSnapshot();    
+    std::map<std::string, ClusterNode> GetClusterNodesSnapshot();
     void AddNode(ClusterNode* node);
+    void AddNode(std::string nodeId);
     void SetNodeLoad(std::string nodeId, float load, std::string loadTimestamp);    
     void RemoveNode(std::string nodeId);
 };

@@ -34,6 +34,8 @@ std::string LoadInfoReporter::GetLoadInfoMessage()
     auto currentTimestamp = CurrentISO8601TimeUTC();
 
     nlohmann::json jsonMessage;
+    // There's actually no need to send the node name because the sender name it's always attached to spread messages as metadata.
+    // Leaving it comply with assignment message contract
     jsonMessage["node_name"] = this->_username;
     jsonMessage["time"] = currentTimestamp;
     jsonMessage["load"] = loadAsInt;

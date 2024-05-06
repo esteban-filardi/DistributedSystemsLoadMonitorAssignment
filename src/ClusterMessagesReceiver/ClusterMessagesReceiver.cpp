@@ -13,6 +13,8 @@
 using namespace std;
 
 void DisplayMessageInformation(char * message, int messageServiceType, int ret, char * sender, int16 applicationSpecificMessageType, int isThereEndianMisMatch, int numberOfGroupMessageWasSentTo, char(*groupsMessageWasSentTo)[DSLM_MAX_NUMBER_OF_GROUPS]);
+bool IsJoinMessageOfThisProcess(std::string currentProcessName, std::string changedMember);
+void InitializeCluster(int numberOfUsers, char(*membersMessageWasSentTo)[DSLM_MAX_NUMBER_OF_GROUPS]);
 
 // Constructor definition
 ClusterMessagesReceiver::ClusterMessagesReceiver(mailbox mailboxParam, std::string username, std::string groupName) {
@@ -35,21 +37,21 @@ void ClusterMessagesReceiver::ReceiveMessage()
     // Not expecting longer messages
     static char message[1024];
     char sender[MAX_GROUP_NAME];
-    char groupsMessageWasSentTo[DSLM_MAX_NUMBER_OF_GROUPS][MAX_GROUP_NAME];
-    int numberOfGroupMessageWasSentTo;
+    char groupsOrUsersMessageWasSentTo[DSLM_MAX_NUMBER_OF_GROUPS][MAX_GROUP_NAME];
+    int numberOfUserOrGroupsMessageWasSentTo;
     int messageServiceType = 0;
-    int16 applicationSpecificMessageType;
-    int isThereEndianMisMatch;
+    int16 appSpecificMessageTypeOrIndexOfCurrentProccess;
+    int isThereEndianMismatch;
     
-    int ret = SP_receive(this->_mailbox, &messageServiceType, sender, 100, &numberOfGroupMessageWasSentTo, groupsMessageWasSentTo,
-        &applicationSpecificMessageType, &isThereEndianMisMatch, sizeof(message), message);
+    int ret = SP_receive(this->_mailbox, &messageServiceType, sender, 100, &numberOfUserOrGroupsMessageWasSentTo, groupsOrUsersMessageWasSentTo,
+        &appSpecificMessageTypeOrIndexOfCurrentProccess, &isThereEndianMismatch, sizeof(message), message);
     if (ret < 0)
     {
         SP_error(ret);
         exit(0);
     }
 
-    DisplayMessageInformation(message, messageServiceType, ret, sender, applicationSpecificMessageType, isThereEndianMisMatch, numberOfGroupMessageWasSentTo, groupsMessageWasSentTo);
+    DisplayMessageInformation(message, messageServiceType, ret, sender, appSpecificMessageTypeOrIndexOfCurrentProccess, isThereEndianMismatch, numberOfUserOrGroupsMessageWasSentTo, groupsOrUsersMessageWasSentTo);
 
     Application::PrintUserInputPrompt();
 
@@ -57,13 +59,15 @@ void ClusterMessagesReceiver::ReceiveMessage()
     {
         /* A regular message, sent by one of the processes */
 
+        int16 appSpecificMessageType = appSpecificMessageTypeOrIndexOfCurrentProccess;
+
         // In this context ret is message size
         int messageSize = ret;
         // Prevents message from being corrupted with characters of previous messages
         message[messageSize] = 0;
 
         // Application specific message type will always be the same for this assignment
-        if (applicationSpecificMessageType == MT_LOAD_INFO_MESS_TYPE) {
+        if (appSpecificMessageTypeOrIndexOfCurrentProccess == MT_LOAD_INFO_MESS_TYPE) {
             auto jsonMessage = nlohmann::json::parse(message);
             Application::cluster.SetNodeLoad(sender, jsonMessage["load"], jsonMessage["time"]);
         }
@@ -82,17 +86,44 @@ void ClusterMessagesReceiver::ReceiveMessage()
 
         if (Is_reg_memb_mess(messageServiceType))
         {
+            auto indexOfCurrentProcess = appSpecificMessageTypeOrIndexOfCurrentProccess;
+            auto membersMessageWasSentTo = groupsOrUsersMessageWasSentTo;
+            auto changedMember = std::string(membershipInfo.changed_member);
+            auto numberOfUsers = numberOfUserOrGroupsMessageWasSentTo;
+
             if (Is_caused_join_mess(messageServiceType))
             {
-                auto node = new ClusterNode(membershipInfo.changed_member);
-                Application::cluster.AddNode(node);
+                auto currentProcessName = std::string(membersMessageWasSentTo[indexOfCurrentProcess]);
+                if (IsJoinMessageOfThisProcess(currentProcessName, changedMember))
+                {
+                    // This is the JOIN message due to the current process first joining the group. 
+                    // It's a good opportunity to retrieve information about existing nodes in the cluster without requiring any extra message
+                    InitializeCluster(numberOfUsers, membersMessageWasSentTo);
+                }
+                else 
+                {
+                    Application::cluster.AddNode(changedMember);
+                }                                
             }
 
             if (Is_caused_disconnect_mess(messageServiceType) || Is_caused_leave_mess(messageServiceType))
             {
-                Application::cluster.RemoveNode(membershipInfo.changed_member);
+                Application::cluster.RemoveNode(changedMember);
             }
         }
+    }
+}
+
+bool IsJoinMessageOfThisProcess(std::string currentProcessName, std::string changedMember)
+{
+    currentProcessName == changedMember;
+}
+
+void InitializeCluster(int numberOfUsers, char(*membersMessageWasSentTo)[DSLM_MAX_NUMBER_OF_GROUPS])
+{
+    for (int i = 0; i < numberOfUsers; ++i)
+    {
+        Application::cluster.AddNode(membersMessageWasSentTo[i]);
     }
 }
 
@@ -104,10 +135,10 @@ void ClusterMessagesReceiver::ReceiveMessage()
 /// <param name="ret"></param>
 /// <param name="sender"></param>
 /// <param name="applicationSpecificMessageType"></param>
-/// <param name="isThereEndianMisMatch"></param>
+/// <param name="isThereEndianMismatch"></param>
 /// <param name="numberOfGroupMessageWasSentTo"></param>
 /// <param name="groupsMessageWasSentTo"></param>
-void DisplayMessageInformation(char* message, int messageServiceType, int ret, char* sender, int16 applicationSpecificMessageType, int isThereEndianMisMatch, int numberOfGroupMessageWasSentTo, char (*groupsMessageWasSentTo) [DSLM_MAX_NUMBER_OF_GROUPS])
+void DisplayMessageInformation(char* message, int messageServiceType, int ret, char* sender, int16 applicationSpecificMessageType, int isThereEndianMismatch, int numberOfGroupMessageWasSentTo, char (*groupsMessageWasSentTo) [DSLM_MAX_NUMBER_OF_GROUPS])
 {
     printf("\n");
     if (Is_regular_mess(messageServiceType))
@@ -130,7 +161,7 @@ void DisplayMessageInformation(char* message, int messageServiceType, int ret, c
         else if (Is_safe_mess(messageServiceType))
             printf("received SAFE ");
         printf("message from %s of type %d (endian %d), to %d groups \n(%d bytes): %s\n",
-            sender, applicationSpecificMessageType, isThereEndianMisMatch, numberOfGroupMessageWasSentTo, ret, message);
+            sender, applicationSpecificMessageType, isThereEndianMismatch, numberOfGroupMessageWasSentTo, ret, message);
     }
     else if (Is_membership_mess(messageServiceType))
     {

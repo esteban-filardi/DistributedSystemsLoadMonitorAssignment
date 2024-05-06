@@ -4,7 +4,18 @@ void Cluster::AddNode(ClusterNode * node)
 {
     std::lock_guard<std::mutex> lock(_mutex);
 
+    if (_nodes.count(node->name) != 0)
+    {
+        return;
+    }
+
     this->_nodes[node->name] = node;
+}
+
+void Cluster::AddNode(std::string nodeId)
+{
+    auto node = new ClusterNode(nodeId);
+    this->AddNode(node);
 }
 
 void Cluster::SetNodeLoad(std::string nodeId, float load, std::string loadTimestamp)
