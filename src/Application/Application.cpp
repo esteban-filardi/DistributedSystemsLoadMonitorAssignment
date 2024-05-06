@@ -62,7 +62,8 @@ int Application::Run(int argc, char* argv[]) {
 
 void SendLoadInfoTask(mailbox mailboxParam, std::string user, std::string clusterGroupName)
 {
-	LoadInfoReporter loadInfoReporter(mailboxParam, user, clusterGroupName);
+	CpuUsageCalculator cpuUsageCalculator;
+	LoadInfoReporter loadInfoReporter(mailboxParam, user, clusterGroupName, cpuUsageCalculator);
 
 	while (true)
 	{

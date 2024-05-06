@@ -4,7 +4,6 @@
 #include <cstdio>
 #include <chrono>
 #include <iomanip>
-#include "../get-percentage-cpu.h"
 #include "../AppMessageTypes/AppMessageTypes.h"
 #include "../../include/json.hpp"
 
@@ -13,10 +12,11 @@ using namespace std;
 std::string CurrentISO8601TimeUTC();
 
 // Constructor definition
-LoadInfoReporter::LoadInfoReporter(mailbox mailboxParam, std::string username, std::string groupName) {
+LoadInfoReporter::LoadInfoReporter(mailbox mailboxParam, std::string username, std::string groupName, CpuUsageCalculator cpuUsageCalculator) {
     this->_mailbox = mailboxParam;
     this->_username = username;
     this->_groupName = groupName;
+    this->_cpuUsageCalculator = cpuUsageCalculator;
 }
 
 void LoadInfoReporter::SendLoadInfo() {
@@ -28,7 +28,7 @@ void LoadInfoReporter::SendLoadInfo() {
 
 std::string LoadInfoReporter::GetLoadInfoMessage()
 {
-    auto loadAsInt = getPercentageCpu();
+    auto loadAsInt = _cpuUsageCalculator.GetPercentageCpu();
     auto loadAsString = std::to_string(loadAsInt);
 
     auto currentTimestamp = CurrentISO8601TimeUTC();

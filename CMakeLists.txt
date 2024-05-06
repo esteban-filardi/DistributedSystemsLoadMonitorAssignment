@@ -14,6 +14,7 @@ set(SOURCES
     include/json.hpp
     src/GuidGenerator/GuidGenerator.cpp
     src/AppMessageTypes/AppMessageTypes.h
+    src/CpuUsageCalculator/CpuUsageCalculator.cpp
  )
 
 add_executable(DistributedSystemsLoadMonitorAssignment ${SOURCES})
