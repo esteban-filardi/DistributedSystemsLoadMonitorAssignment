@@ -1,22 +1,16 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <thread>
 #include <chrono>
-#include <iostream>
-#include <random>
+#include <thread>
+#include "../include/linux-system-usage.hpp"
 
-int getPercentageCpu() {
-    // @todo: add a real implementation
+using namespace get_system_usage_linux;
 
-    // Create a random number generator
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> dist(0, 100);
+int getPercentageCpu()
+{
+    CPU_stats t1 = read_cpu_data();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    CPU_stats t2 = read_cpu_data();
 
-    // Generate a random number
-    int randomNumber = dist(gen);
-    return randomNumber;
+    return 100 * get_cpu_usage(t1, t2);
 }
