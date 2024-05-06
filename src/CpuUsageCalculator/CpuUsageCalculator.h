@@ -4,5 +4,5 @@ class CpuUsageCalculator {
 private:
 
 public:
-    int GetPercentageCpu();
+    float GetPercentageCpu();
 };

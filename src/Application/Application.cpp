@@ -131,13 +131,23 @@ void Application::PrintNodeList()
 
 	for (auto it = nodesMap.begin(); it != nodesMap.end(); ++it)
 	{
-		std::string loadInfoString = it->second.load.has_value() ? std::to_string(it->second.load.value()) + " %" : "";
+		builder << std::setw(27) << it->first
+			<< std::left
+			<< std::setw(13);
 
-		builder << std::setw(27) << it->first 
-			<< std::left
-			<< std::setw(13) << loadInfoString 
-			<< std::left
-			<< std::setw(25) << it->second.loadTimestamp.value_or("") << std::endl;
+		if (it->second.load.has_value()) 
+		{
+			std::ostringstream percentageBuilder;
+			// Need to create an additional stream to format the percentage because setw only applies to the immediate operand
+			// which makes difficult to render the table correctly
+			percentageBuilder << std::setprecision(2) << it->second.load.value() << " %";
+			builder << percentageBuilder.str();
+		}
+		else {
+			builder << "Unknown";
+		}
+
+		builder << std::left << std::setw(25) << it->second.loadTimestamp.value_or("") << std::endl;
 	}
 
 	std::cout << builder.str() << std::endl;

@@ -11,7 +11,7 @@ public:
     ClusterNode(std::string name);
     ClusterNode(const ClusterNode& other);
     std::string name;
-    std::optional<int> load;
+    std::optional<float> load;
     /** The timestamp at which the load was reported */
     std::optional<std::string> loadTimestamp;
 };

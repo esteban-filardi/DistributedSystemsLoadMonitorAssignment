@@ -17,7 +17,7 @@ public:
     /// <returns></returns>
     std::map<std::string, ClusterNode> GetClusterNodesSnapshot();    
     void AddNode(ClusterNode* node);
-    void SetNodeLoad(std::string nodeId, int load, std::string loadTimestamp);    
+    void SetNodeLoad(std::string nodeId, float load, std::string loadTimestamp);    
     void RemoveNode(std::string nodeId);
 };
 

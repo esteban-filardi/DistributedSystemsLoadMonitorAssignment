@@ -7,7 +7,7 @@ void Cluster::AddNode(ClusterNode * node)
     this->_nodes[node->name] = node;
 }
 
-void Cluster::SetNodeLoad(std::string nodeId, int load, std::string loadTimestamp)
+void Cluster::SetNodeLoad(std::string nodeId, float load, std::string loadTimestamp)
 {
     std::lock_guard<std::mutex> lock(_mutex);
 
