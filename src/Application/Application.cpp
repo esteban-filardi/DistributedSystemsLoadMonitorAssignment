@@ -123,16 +123,20 @@ void Application::PrintNodeList()
 {
 	std::ostringstream builder;
 
-	builder << std::left << std::setw(30) << "Name" << std::setw(30) << "Load" << std::endl;
-	builder << std::setfill('-') << std::setw(60) << "" << std::setfill(' ') << std::endl;
+	builder << std::left << std::setw(27) << "Name" << std::setw(13) << "Load" << std::setw(25) << "Load Timestamp" << std::endl;
+	builder << std::setfill('-') << std::setw(65) << "" << std::setfill(' ') << std::endl;
 
 	auto nodesMap = Application::cluster.GetClusterNodesSnapshot();
 
 	for (auto it = nodesMap.begin(); it != nodesMap.end(); ++it)
 	{
-		std::string loadInfoString = it->second.load.has_value() ? std::to_string(it->second.load.value()) : "";
+		std::string loadInfoString = it->second.load.has_value() ? std::to_string(it->second.load.value()) + " %" : "";
 
-		builder << std::setw(30) << it->first << std::setw(30) << loadInfoString << std::endl;
+		builder << std::setw(27) << it->first 
+			<< std::left
+			<< std::setw(13) << loadInfoString 
+			<< std::left
+			<< std::setw(25) << it->second.loadTimestamp.value_or("") << std::endl;
 	}
 
 	std::cout << builder.str() << std::endl;

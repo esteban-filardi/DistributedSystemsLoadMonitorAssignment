@@ -65,7 +65,7 @@ void ClusterMessagesReceiver::ReceiveMessage()
         // Application specific message type will always be the same for this assignment
         if (applicationSpecificMessageType == MT_LOAD_INFO_MESS_TYPE) {
             auto jsonMessage = nlohmann::json::parse(message);
-            Application::cluster.SetNodeLoad(sender, jsonMessage["load"]);
+            Application::cluster.SetNodeLoad(sender, jsonMessage["load"], jsonMessage["time"]);
         }
     }
     else if (Is_membership_mess(messageServiceType))
