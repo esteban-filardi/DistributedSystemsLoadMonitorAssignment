@@ -18,7 +18,7 @@ public:
     static void PrintNodeList();
     static void UserCommand();
 private:
-    const std::string CLUSTER_GROUP_NAME = "assignment";
+    const std::string CLUSTER_GROUP_NAME = "load-reporters";
     /** Returned group name which can be used to send unicast messages to this connection (It is required for SP_Connect) */
     static char _privateGroup[MAX_GROUP_NAME];
     static char _spreadName[80];
