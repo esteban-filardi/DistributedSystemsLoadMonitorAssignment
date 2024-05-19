@@ -51,9 +51,9 @@ void ClusterMessagesReceiver::ReceiveMessage()
         exit(0);
     }
 
-    DisplayMessageInformation(message, messageServiceType, ret, sender, appSpecificMessageTypeOrIndexOfCurrentProccess, isThereEndianMismatch, numberOfUserOrGroupsMessageWasSentTo, groupsOrUsersMessageWasSentTo);
-
-    Application::PrintUserInputPrompt();
+    // Uncomment for debugging
+    // DisplayMessageInformation(message, messageServiceType, ret, sender, appSpecificMessageTypeOrIndexOfCurrentProccess, isThereEndianMismatch, numberOfUserOrGroupsMessageWasSentTo, groupsOrUsersMessageWasSentTo);
+    // Application::PrintUserInputPrompt();
 
     if (Is_regular_mess(messageServiceType))
     {
@@ -67,8 +67,12 @@ void ClusterMessagesReceiver::ReceiveMessage()
         message[messageSize] = 0;
 
         // Application specific message type will always be the same for this assignment
+        
         if (appSpecificMessageTypeOrIndexOfCurrentProccess == MT_LOAD_INFO_MESS_TYPE) {
             auto jsonMessage = nlohmann::json::parse(message);
+
+            Application::PrintMessage("INFO: Received load information from node with ID " + string(sender) + "\n" + string(6, ' ') + jsonMessage.dump());
+            
             Application::cluster.SetNodeLoad(sender, jsonMessage["load"], jsonMessage["time"]);
         }
     }
@@ -93,6 +97,7 @@ void ClusterMessagesReceiver::ReceiveMessage()
 
             if (Is_caused_join_mess(messageServiceType))
             {
+
                 auto currentProcessName = std::string(membersMessageWasSentTo[indexOfCurrentProcess]);
                 if (IsJoinMessageOfThisProcess(currentProcessName, changedMember))
                 {
@@ -102,12 +107,17 @@ void ClusterMessagesReceiver::ReceiveMessage()
                 }
                 else 
                 {
+                    Application::PrintMessage("INFO: Node with ID " + changedMember + " has joined the cluster");
+
                     Application::cluster.AddNode(changedMember);
                 }                                
             }
 
             if (Is_caused_disconnect_mess(messageServiceType) || Is_caused_leave_mess(messageServiceType))
             {
+                Application::PrintMessage("INFO: Node with ID " + changedMember + " has left the cluster");
+                
+
                 Application::cluster.RemoveNode(changedMember);
             }
         }
@@ -116,7 +126,7 @@ void ClusterMessagesReceiver::ReceiveMessage()
 
 bool IsJoinMessageOfThisProcess(std::string currentProcessName, std::string changedMember)
 {
-    currentProcessName == changedMember;
+    return currentProcessName == changedMember;
 }
 
 void InitializeCluster(int numberOfUsers, char(*membersMessageWasSentTo)[DSLM_MAX_NUMBER_OF_GROUPS])

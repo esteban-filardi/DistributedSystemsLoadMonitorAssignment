@@ -13,6 +13,7 @@ public:
     ~Application();
 
     int Run(int argc, char* argv[]);
+    static void PrintMessage(std::string message);
     static void PrintMenu();
     static void PrintUserInputPrompt();
     static void PrintNodeList();

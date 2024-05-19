@@ -102,6 +102,12 @@ void ReceiveClusterMessagesTask(mailbox mailboxParam, std::string user, std::str
     clusterMessageReceiver.ReceiveClusterMessages();
 }
 
+void Application::PrintMessage(std::string message)
+{
+	std::cout << std::endl << message << std::endl;
+	Application::PrintUserInputPrompt();
+}
+
 void Application::PrintMenu()
 {
 	std::ostringstream builder;
