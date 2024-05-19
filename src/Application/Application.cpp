@@ -17,6 +17,7 @@ Cluster Application::cluster = Cluster();
 char Application::_privateGroup[MAX_GROUP_NAME];
 char Application::_spreadName[80];
 mailbox Application::_mailbox;
+const uint LOAD_REPORTING_INTERVAL_SECONDS = 5;
 
 void SendLoadInfoTask(mailbox mailboxParam, std::string user, std::string clusterGroupName);
 void ReceiveClusterMessagesTask(mailbox mailboxParam, std::string user, std::string clusterGroupName);
@@ -71,7 +72,7 @@ void SendLoadInfoTask(mailbox mailboxParam, std::string user, std::string cluste
 	{
 		loadInfoReporter.SendLoadInfo();
 		
-		std::chrono::seconds durationToWait(1);
+		std::chrono::seconds durationToWait(LOAD_REPORTING_INTERVAL_SECONDS);
 		std::this_thread::sleep_for(durationToWait);
 	}
 }
